@@ -7,15 +7,14 @@ class Settings:
         self.system_path = os.path.dirname(os.path.realpath(__file__))
         self.dataset_dir_path = os.path.join(self.system_path, "datasets")
         self.users_path = os.path.join(self.dataset_dir_path, "users.csv")
-        self.ratings_path = os.path.join(self.dataset_dir_path, "ratings.csv")
+        # self.ratings_path = os.path.join(self.dataset_dir_path, "ratings.csv")
         if initial_setup:
             self.initial_setup()
-        self.dataset = None
-        self.user_id = None
         self.users = pandas.read_csv(self.users_path)
-        self.ratings = pandas.read_csv(self.ratings_path)
+        # self.ratings = pandas.read_csv(self.ratings_path)
         self.save_after_each_joke = True
         self.set_user_id()
+        self.set_ratings()
         self.set_dataset()
 
     def set_dataset(self):
@@ -86,7 +85,7 @@ class Settings:
                     user_id = input()
                     if user_id in self.users['user_id'].values:
                         self.user_id = user_id
-                        print("User id set to " + user_id + ".")
+                        print(f"User id set to {user_id}.")
                     else:
                         flag = True
                         print("User id does not exist. Please try again.")
@@ -98,6 +97,10 @@ class Settings:
                     print("Invalid choice. Please try again.")
             else:
                 print("Invalid choice. Please try again.")
+
+    def set_ratings(self):
+        self.ratings_path = os.path.join(self.dataset_dir_path, f"ratings_{self.user_id}.csv")
+        self.ratings = pandas.read_csv(self.ratings_path)
 
     def get_dataset(self):
         return self.dataset
@@ -131,7 +134,7 @@ class Settings:
         # users = pandas.read_csv(self.users_path)
 
         # user id must start with letters USF and end with a number between 1000 and 9999
-        user_id = "USF" + str(self.users.shape[0] + 1000)
+        user_id = f"USF{str(self.users.shape[0] + 1000)}"
 
         # add user details as a new row to users dataframe
         new_user_row  = {'user_id': user_id, 'name': name, 'age': age, 'gender': gender, 'ethnicity': ethnicity, 'country': country, 'location': location}
@@ -140,11 +143,15 @@ class Settings:
         # save users dataframe to users.csv
         self.users.to_csv(self.users_path, index=False)
 
-        print("User created successfully! Setting the current user to " + name + ".")
-        print("Your user id is: " + user_id)
+        print(f"User created successfully! Setting the current user to {name}.")
+        print(f"Your user id is: {user_id}")
 
         # # create a new column in ratings dataframe for the new user
         # self.ratings[user_id] = numpy.nan
+
+        self.ratings_path = os.path.join(self.dataset_dir_path, f"ratings_{user_id}.csv")
+        self.ratings = pandas.DataFrame(columns=['joke_id', 'user_id', 'rating'])
+        self.ratings.to_csv(self.ratings_path, index=False)
 
         return user_id
     
@@ -156,19 +163,12 @@ class Settings:
         If they do not exist, it will create them. Columns in the ratings.csv file are 
         'joke_id', 'user_id', 'rating'. Columns in the users.csv file are 'user_id', 'name'.
         """
-        ratings_path = os.path.join(self.dataset_dir_path, "ratings.csv")
-        users_path = os.path.join(self.dataset_dir_path, "users.csv")
-
         if not os.path.exists(self.dataset_dir_path):
             os.mkdir(self.dataset_dir_path)
 
-        if not os.path.exists(ratings_path):
-            self.ratings = pandas.DataFrame(columns=['joke_id', 'user_id', 'rating'])
-            self.ratings.to_csv(ratings_path, index=False)
-
-        if not os.path.exists(users_path):
+        if not os.path.exists(self.users_path):
             self.users = pandas.DataFrame(columns=['user_id', 'name', 'age', 'gender', 'ethnicity', 'country', 'location'])
-            self.users.to_csv(users_path, index=False)
+            self.users.to_csv(self.users_path, index=False)
             self.create_user()
 
     def change_settings(self):
@@ -249,10 +249,9 @@ def get_unrated_jokes(dataset, user_id, ratings, dataset_code):
     user_ratings = ratings[ratings['user_id'] == user_id]
     ratings_id_set = set(user_ratings['joke_id'])
     unrated_jokes = dataset.copy()
-    unrated_jokes['joke_id'] = dataset_code + unrated_jokes[joke_column_name]
+    unrated_jokes['joke_id'] = dataset_code + unrated_jokes[joke_column_name].astype(str)
     unrated_jokes = unrated_jokes[~unrated_jokes['joke_id'].isin(ratings_id_set)]
     unrated_jokes.drop(columns=['joke_id'], inplace=True)
-
     return unrated_jokes
 
 def rate_jokes(settings):
@@ -283,12 +282,12 @@ def rate_jokes(settings):
     for index, row in unrated_jokes.iterrows():
         #joke_id is either 'id' or 'jokeId' depending on the dataset
         joke_id = row['id'] if 'id' in row else row['jokeId']
-        dataset_joke_id = dataset_code + joke_id
-        print("Joke " + joke_id + ": " + dataset_joke_id)
+        dataset_joke_id = f"{dataset_code}{joke_id}"
+        print(f"Joke {joke_id} : {dataset_joke_id}")
         if 'title' in row.index and row['title'] != '':
             print(row['title'])
         if 'category' in row.index and row['category'] != '':
-            print("Category: " + row['category'])
+            print(f"Category: {row['category']}")
         if 'body' in row.index and row['body'] != '':
             print(row['body'])
         if 'jokeText' in row.index and row['jokeText'] != '':
