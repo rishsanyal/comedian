@@ -7,11 +7,9 @@ class Settings:
         self.system_path = os.path.dirname(os.path.realpath(__file__))
         self.dataset_dir_path = os.path.join(self.system_path, "datasets")
         self.users_path = os.path.join(self.dataset_dir_path, "users.csv")
-        # self.ratings_path = os.path.join(self.dataset_dir_path, "ratings.csv")
         if initial_setup:
             self.initial_setup()
         self.users = pandas.read_csv(self.users_path)
-        # self.ratings = pandas.read_csv(self.ratings_path)
         self.save_after_each_joke = True
         self.set_user_id()
         self.set_ratings()
@@ -41,7 +39,6 @@ class Settings:
                     print("Loading Jester dataset...")
                 elif choice == 2:
                     self.dataset_name = "reddit"
-                    # read json file to pandas dataframe
                     self.dataset = pandas.read_json(os.path.join(self.dataset_dir_path, "reddit_jokes.json"))
                     self.dataset_code = 'RE'
                     print("Loading Reddit dataset...")
@@ -70,7 +67,7 @@ class Settings:
             print("\nSet User ID")
             print("-----------")
             print("1. Create new user")
-            print("2. Enter existing user id")
+            print("2. Enter existing user")
             print("3. Back")
             print("4. Exit")
             choice = input("Enter your choice: ")
@@ -81,11 +78,14 @@ class Settings:
                 if choice == 1:
                     self.user_id = self.create_user()
                 elif choice == 2:
-                    print("Enter your user id: ")
-                    user_id = input()
-                    if user_id in self.users['user_id'].values:
-                        self.user_id = user_id
-                        print(f"User id set to {user_id}.")
+                    print("Enter your user id or name: ")
+                    user = input()
+                    if user in self.users['user_id'].values or user.lower() in self.users['name'].str.lower().values:
+                        if user.startswith('USF'):
+                            self.user_id = user
+                        else:
+                            self.user_id = self.users.loc[self.users['name'].str.lower() == user.lower()]['user_id'].values[0]
+                        print(f"User id set to {self.user_id}.")
                     else:
                         flag = True
                         print("User id does not exist. Please try again.")
@@ -128,26 +128,13 @@ class Settings:
         location = input()
         print("Creating user...")
 
-        # system_path = os.path.dirname(os.path.realpath(__file__))
-        # dataset_path = os.path.join(system_path, "dataset")
-        # users_path = os.path.join(dataset_path, "users.csv")
-        # users = pandas.read_csv(self.users_path)
-
-        # user id must start with letters USF and end with a number between 1000 and 9999
         user_id = f"USF{str(self.users.shape[0] + 1000)}"
-
-        # add user details as a new row to users dataframe
         new_user_row  = {'user_id': user_id, 'name': name, 'age': age, 'gender': gender, 'ethnicity': ethnicity, 'country': country, 'location': location}
         self.users = self.users.append(new_user_row, ignore_index=True)
-        
-        # save users dataframe to users.csv
         self.users.to_csv(self.users_path, index=False)
 
         print(f"User created successfully! Setting the current user to {name}.")
         print(f"Your user id is: {user_id}")
-
-        # # create a new column in ratings dataframe for the new user
-        # self.ratings[user_id] = numpy.nan
 
         self.ratings_path = os.path.join(self.dataset_dir_path, f"ratings_{user_id}.csv")
         self.ratings = pandas.DataFrame(columns=['joke_id', 'user_id', 'rating'])
@@ -238,14 +225,7 @@ def get_unrated_jokes(dataset, user_id, ratings, dataset_code):
     """
     This function is used to get the list of jokes that have not been rated by the user.
     """
-    # get jokes that have been rated by the user from the ratings dataframe
-    # rated_jokes = ratings[ratings['user_id'] == user_id]['joke_id'].values
-    # # find if column name is either 'id' or 'jokeId' in the dataset dataframe and assign it to joke_column
     joke_column_name = 'id' if 'id' in dataset.columns else 'jokeId'
-    # dataset_joke_ids = dataset[joke_column].values
-    # # get the dataframe of jokes that have not been rated by the user from the dataset dataframe
-    # return unrated_jokes
-
     user_ratings = ratings[ratings['user_id'] == user_id]
     ratings_id_set = set(user_ratings['joke_id'])
     unrated_jokes = dataset.copy()
@@ -269,18 +249,11 @@ def rate_jokes(settings):
     have been rated.
     """
     dataset_code = settings.get_dataset_code()
-    # get the list of jokes that have not been rated by the user
     unrated_jokes = get_unrated_jokes(settings.get_dataset(), settings.get_user_id(), settings.ratings, dataset_code)
-
-    # if there are no unrated jokes, display a message and return
     if len(unrated_jokes) == 0:
         print("You have already rated all the jokes.")
         return
-
-    # display the joke to the user and ask them to rate it
-    # loop through the rows in the unrated jokes dataframe
     for index, row in unrated_jokes.iterrows():
-        #joke_id is either 'id' or 'jokeId' depending on the dataset
         joke_id = row['id'] if 'id' in row else row['jokeId']
         dataset_joke_id = f"{dataset_code}{joke_id}"
         print(f"Joke {joke_id} : {dataset_joke_id}")
@@ -300,7 +273,6 @@ def rate_jokes(settings):
                 rating_flag = False
                 continue
             elif rating == 'q' or rating == 'Q':
-                # save the ratings dataframe to ratings.csv
                 settings.save_ratings()
                 rating_flag = False
                 break
