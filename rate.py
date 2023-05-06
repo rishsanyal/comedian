@@ -44,7 +44,7 @@ class Settings:
                     print("Loading Reddit dataset...")
                 elif choice == 3:
                     self.dataset_name = "stupidstuff"
-                    self.dataset = pandas.read_csv(os.path.join(self.dataset_dir_path, "stupidstuff_shuffled.csv"))
+                    self.dataset = pandas.read_json(os.path.join(self.dataset_dir_path, "stupidstuff_shuffled.json"))
                     self.dataset_code = 'SS'
                     print("Loading StupidStuff dataset...")
                 elif choice == 4:
