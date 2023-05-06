@@ -44,7 +44,7 @@ class Settings:
                     print("Loading Reddit dataset...")
                 elif choice == 3:
                     self.dataset_name = "stupidstuff"
-                    self.dataset = pandas.read_json(os.path.join(self.dataset_dir_path, "stupidstuff.json"))
+                    self.dataset = pandas.read_csv(os.path.join(self.dataset_dir_path, "stupidstuff_shuffled.csv"))
                     self.dataset_code = 'SS'
                     print("Loading StupidStuff dataset...")
                 elif choice == 4:
@@ -104,13 +104,13 @@ class Settings:
 
     def get_dataset(self):
         return self.dataset
-    
+
     def get_user_id(self):
         return self.user_id
-    
+
     def get_dataset_code(self):
         return self.dataset_code
-    
+
     def create_user(self):
         print("\nCreate user")
         print("-----------")
@@ -141,13 +141,13 @@ class Settings:
         self.ratings.to_csv(self.ratings_path, index=False)
 
         return user_id
-    
+
     def initial_setup(self):
         """
         This function is called initially to setup the program.
 
         It checks if the files "ratings.csv" and "users.csv" exist in the dataset directory.
-        If they do not exist, it will create them. Columns in the ratings.csv file are 
+        If they do not exist, it will create them. Columns in the ratings.csv file are
         'joke_id', 'user_id', 'rating'. Columns in the users.csv file are 'user_id', 'name'.
         """
         if not os.path.exists(self.dataset_dir_path):
@@ -202,7 +202,7 @@ class Settings:
 
     def save_ratings(self):
         """
-        This function is used to save the ratings in the ratings dataframe to the 
+        This function is used to save the ratings in the ratings dataframe to the
         ratings.csv file.
         """
         self.ratings.to_csv(self.ratings_path, index=False)
@@ -243,9 +243,9 @@ def rate_jokes(settings):
     displays the joke to the user and asks them to rate it. The user can rate the
     joke from 1 to 10. The user can also choose to skip the joke by entering 's'
     or 'S'. If the user chooses to skip the joke, the joke is not rated and the
-    program moves on to the next joke. If the user chooses to rate the joke, the 
-    rating is saved in the ratings.csv file. The program then moves on to the next 
-    joke until the user stops rating by entering 'q' or 'Q', or until all jokes 
+    program moves on to the next joke. If the user chooses to rate the joke, the
+    rating is saved in the ratings.csv file. The program then moves on to the next
+    joke until the user stops rating by entering 'q' or 'Q', or until all jokes
     have been rated.
     """
     dataset_code = settings.get_dataset_code()
