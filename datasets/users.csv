@@ -1,4 +1,4 @@
-user_id,name,age,gender,ethnicity,country,location
-USF1000,Tanya,24,Female,South East Asian,India,San Francisco
-USF1001,rishab,26,Male,South East Asian,India,San Francisco
-USF1002,Parisa,26,Female,Middle Eastern,Iran,San Francisco
+user_id,name,age,gender,ethnicity,country,location,avg_user_rating,city,buddy
+USF1000,Tanya,24,Female,South East Asian,India,San Francisco,5.968586387434555,Delhi,USF1001
+USF1001,rishab,26,Male,South East Asian,India,San Francisco,6.727748691099476,Mumbai,USF1000
+USF1002,Parisa,26,Female,Middle Eastern,Iran,San Francisco,0.806282722513089,Ahvaz,USF1001
