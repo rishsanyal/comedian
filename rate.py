@@ -253,9 +253,11 @@ def rate_jokes(settings):
     if len(unrated_jokes) == 0:
         print("You have already rated all the jokes.")
         return
+    jokes_counter = 0
     for index, row in unrated_jokes.iterrows():
         joke_id = row['id'] if 'id' in row else row['jokeId']
         dataset_joke_id = f"{dataset_code}{joke_id}"
+        print(f"\n**** Joke {jokes_counter + 1} ****")
         print(f"Joke {joke_id} : {dataset_joke_id}")
         if 'title' in row.index and row['title'] != '':
             print(row['title'])
@@ -284,6 +286,7 @@ def rate_jokes(settings):
                     settings.save_ratings()
                     print("Rating saved successfully!")
                 rating_flag = False
+                jokes_counter += 1
             else:
                 print("Invalid rating. Please try again. ")
                 continue
